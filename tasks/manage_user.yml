@@ -31,6 +31,8 @@
   authorized_key:
     key: "{{ user.authorized_keys | default([]) | join('\n') }}"
     user: "{{ user.username }}"
+    path: "{{ user.authorized_keys_path | default(users_authorized_keys_path) | regex_replace('###USERNAME###', user.username) }}"
+    manage_dir: "{{ user.authorized_keys_manage_dir | default(users_authorized_keys_manage_dir) }}"
     exclusive: "{{ user.authorized_keys_exclusive | default(users_authorized_keys_exclusive) }}"
   ignore_errors: "{{ ansible_check_mode }}"
-  when: user.home_create | default(users_home_create)
+  when: user.home_create | default(users_home_create) or user.authorized_keys_path | default(users_authorized_keys_path)
