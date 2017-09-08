@@ -50,6 +50,7 @@ Here is a list of all the default variables for this role, which are also availa
 #     group: staff
 #     password: xxxxx               (a hash created with: mkpasswd)
 #     groups: ["adm", "www-data"]
+#     servers: []
 #     append: no                    (only append groups, leave others)
 #     home_mode: "0750"
 #     home_create: yes
@@ -122,6 +123,9 @@ This is an example playbook:
       - username: foobar_groups_reset
         groups: []
         group: foobar_groups_reset
+      - username: foobar_only_on_server35
+        servers:
+          - server35
       - username: foobar_home_mode
         home_mode: "0750"
       - username: foobar_key
