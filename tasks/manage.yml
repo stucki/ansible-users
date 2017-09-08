@@ -12,6 +12,23 @@
     state: present
   with_items: "{{ users_groups | default([]) }}"
 
+- name: Select users for the current server
+  set_fact:
+    users_for_server: "{{ users_for_server | default([]) + [item.0 | combine({'servers':item.1})] }}"
+  with_subelements:
+    - "{{ users }}"
+    - servers
+    - flags:
+      skip_missing: true
+  when: item.1 == inventory_hostname
+
+- name: Select users for all servers
+  set_fact:
+    users_for_server: "{{ users_for_server | default([]) + [item | combine({'servers':'all'})] }}"
+  with_items:
+    - "{{ users }}"
+  when: item.servers is undefined
+
 - name: Adding users
   user:
     name: "{{ item.username }}"
@@ -30,7 +47,7 @@
     createhome: "{{ item.home_create | default(omit) }}"
     shell: "{{ item.shell | default(omit) }}"
     update_password: "{{ item.update_password | default(omit) }}"
-  with_items: "{{ users }}"
+  with_items: "{{ users_for_server | default([]) }}"
 
 - name: Setting user's home permission
   file:
@@ -39,7 +56,7 @@
     group: "{{ item.group if item.group is defined else (users_group if users_group else item.username) }}"
     mode: "{{ item.home_mode if item.home_mode is defined else users_home_mode }}"
   when: item.home_create is not defined or item.home_create
-  with_items: "{{ users }}"
+  with_items: "{{ users_for_server | default([]) }}"
 
 - name: Adding user's .ssh directory
   file:
@@ -49,7 +66,7 @@
     state: directory
     mode: '0700'
   when: item.home_create is not defined or item.home_create
-  with_items: "{{ users }}"
+  with_items: "{{ users_for_server | default([]) }}"
 
 - name: Adding user's private key
   template:
@@ -59,7 +76,7 @@
     group: "{{ item.group if item.group is defined else (users_group if users_group else item.username) }}"
     mode: '0600'
   when: (item.home_create is not defined or item.home_create) and item.ssh_key is defined
-  with_items: "{{ users }}"
+  with_items: "{{ users_for_server | default([]) }}"
 
 - name: Adding user's authorized keys
   authorized_key:
@@ -69,7 +86,7 @@
     manage_dir: "{{ item.authorized_keys_manage_dir | default(users_authorized_keys_manage_dir) }}"
     exclusive: "{{ item.authorized_keys_exclusive | default(users_authorized_keys_exclusive) }}"
   when: item.home_create is not defined or item.home_create or (item.authorized_keys_path is defined and item.authorized_keys_path) or users_authorized_keys_path
-  with_items: "{{ users }}"
+  with_items: "{{ users_for_server | default([]) }}"
 
 - name: Removing users
   user:
