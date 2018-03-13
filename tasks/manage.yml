@@ -41,3 +41,9 @@
     state: absent
     remove: "{{ item.remove if item.remove is defined else omit }}"
   with_items: "{{ users_remove }}"
+
+- name: Removing groups
+  group:
+    name: "{{ item }}"
+    state: absent
+  with_items: "{{ usergroups_remove }}"
