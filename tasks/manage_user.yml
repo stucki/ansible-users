@@ -1,5 +1,11 @@
 ---
 
+- name: Adding user-specific primary group
+  group:
+    name: "{{ user.group }}"
+    state: present
+  when: user.group is defined and user.group
+
 - name: "Adding user '{{ user.username }}' to the system"
   ansible.builtin.user:
     name: "{{ user.username }}"
