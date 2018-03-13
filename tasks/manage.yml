@@ -101,3 +101,9 @@
     state: absent
     remove: yes
   with_items: "{{ users_remove }}"
+
+- name: Removing groups
+  group:
+    name: "{{ item }}"
+    state: absent
+  with_items: "{{ usergroups_remove }}"
