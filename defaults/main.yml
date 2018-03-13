@@ -49,3 +49,5 @@ users_authorized_keys_path: "/home/###USERNAME###/.ssh/authorized_keys"
 users_authorized_keys_manage_dir: yes
 # list of users to be removed
 users_remove: []
+# list of groups to be removed
+usergroups_remove: []
