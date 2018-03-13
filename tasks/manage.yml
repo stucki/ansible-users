@@ -29,6 +29,13 @@
     - "{{ users }}"
   when: item.servers is undefined
 
+- name: Adding user-specific primary group
+  group:
+    name: "{{ item.group }}"
+    state: present
+  with_items: "{{ users_for_server | default([]) }}"
+  when: item.group is defined and item.group
+
 - name: Adding users
   user:
     name: "{{ item.username }}"
