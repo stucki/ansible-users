@@ -95,6 +95,33 @@
   when: item.home_create is not defined or item.home_create or (item.authorized_keys_path is defined and item.authorized_keys_path) or users_authorized_keys_path
   with_items: "{{ users_for_server | default([]) }}"
 
+
+- name: Select groups for the current server
+  set_fact:
+    groups_for_server: "{{ groups_for_server | default([]) + [item.0 | combine({'servers':item.1})] }}"
+  with_subelements:
+    - "{{ usergroups }}"
+    - servers
+    - flags:
+      skip_missing: true
+  when: item.1 == inventory_hostname
+
+- name: Select groups for all servers
+  set_fact:
+    groups_for_server: "{{ groups_for_server | default([]) + [item | combine({'servers':'all'})] }}"
+  with_items:
+    - "{{ usergroups }}"
+  when: item.servers is undefined
+
+
+- name: Adding groups
+  group:
+    name: "{{ item.groupname }}"
+    gid: "{{ item.gid | default(omit) }}"
+    system: "{{ item.system | default(omit) }}"
+  with_items: "{{ groups_for_server | default([]) }}"
+
+
 - name: Removing users
   user:
     name: "{{ item }}"
