@@ -21,6 +21,8 @@
     - flags:
       skip_missing: true
   when: item.1 == inventory_hostname
+  loop_control:
+    label: "Select group for the current server {{ item.0.groupname }}"
 
 - name: Select groups for all servers
   set_fact:
@@ -35,6 +37,8 @@
     gid: "{{ item.gid | default(omit) }}"
     system: "{{ item.system | default(omit) }}"
   with_items: "{{ groups_for_server | default([]) }}"
+  loop_control:
+    label: "Adding group {{ item.groupname }}"
 
 - name: Select users for the current server
   set_fact:
@@ -45,6 +49,8 @@
     - flags:
       skip_missing: true
   when: item.1 == inventory_hostname
+  loop_control:
+    label: "Select user for the current server {{ item.0.username }}"
 
 - name: Select users for all servers
   set_fact:
@@ -52,6 +58,8 @@
   with_items:
     - "{{ users }}"
   when: item.servers is undefined
+  loop_control:
+    label: "Select user for all servers {{ item.username }}"
 
 - name: Adding user-specific primary group
   group:
@@ -59,6 +67,8 @@
     state: present
   with_items: "{{ users_for_server | default([]) }}"
   when: item.group is defined and item.group
+  loop_control:
+    label: "Adding user-specific primary group {{ item.username }}: {{ item.group if item.group is defined else item.username }}"
 
 - name: Adding users
   user:
@@ -79,6 +89,8 @@
     shell: "{{ item.shell | default(omit) }}"
     update_password: "{{ item.update_password | default(omit) }}"
   with_items: "{{ users_for_server | default([]) }}"
+  loop_control:
+    label: "Add {{ item.username }}"
 
 - name: Setting user's home permission
   file:
@@ -88,6 +100,8 @@
     mode: "{{ item.home_mode if item.home_mode is defined else users_home_mode }}"
   when: item.home_create is not defined or item.home_create
   with_items: "{{ users_for_server | default([]) }}"
+  loop_control:
+    label: "Setting home permission {{ item.username }}"
 
 - name: Adding user's .ssh directory
   file:
@@ -98,6 +112,8 @@
     mode: '0700'
   when: item.home_create is not defined or item.home_create
   with_items: "{{ users_for_server | default([]) }}"
+  loop_control:
+    label: "Adding .ssh directory {{ item.username }}"
 
 - name: Adding user's private key
   template:
@@ -118,6 +134,8 @@
     exclusive: "{{ item.authorized_keys_exclusive | default(users_authorized_keys_exclusive) }}"
   when: item.home_create is not defined or item.home_create or (item.authorized_keys_path is defined and item.authorized_keys_path) or users_authorized_keys_path
   with_items: "{{ users_for_server | default([]) }}"
+  loop_control:
+    label: "Adding authorized keys {{ item.username }}"
 
 - name: Removing users
   user:
