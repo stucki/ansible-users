@@ -144,6 +144,12 @@
     remove: yes
   with_items: "{{ users_remove }}"
 
+- name: Remove user's authorized keys
+  file:
+    path: "{{ users_authorized_keys_path | regex_replace('###USERNAME###', item) }}"
+    state: absent
+  with_items: "{{ users_remove }}"
+
 - name: Removing groups
   group:
     name: "{{ item }}"
