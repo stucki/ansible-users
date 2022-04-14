@@ -18,6 +18,8 @@
         groups:
           - users
         append: yes
+      - username: foobar_only_on_server35
+        servers: ['server35']
       - username: foobar_groups_reset
         groups: []
         group: foobar_groups_reset
