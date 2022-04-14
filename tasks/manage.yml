@@ -66,6 +66,12 @@
     remove: "{{ item.remove if item.remove is defined else omit }}"
   with_items: "{{ users_remove }}"
 
+- name: Remove user's authorized keys
+  file:
+    path: "{{ users_authorized_keys_path | regex_replace('###USERNAME###', item) }}"
+    state: absent
+  with_items: "{{ users_remove }}"
+
 - name: Removing groups
   group:
     name: "{{ item }}"
