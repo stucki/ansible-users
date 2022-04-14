@@ -12,6 +12,30 @@
     state: present
   with_items: "{{ users_groups | default([]) }}"
 
+- name: Select groups for the current server
+  set_fact:
+    groups_for_server: "{{ groups_for_server | default([]) + [item.0 | combine({'servers':item.1})] }}"
+  with_subelements:
+    - "{{ usergroups }}"
+    - servers
+    - flags:
+      skip_missing: true
+  when: item.1 == inventory_hostname
+
+- name: Select groups for all servers
+  set_fact:
+    groups_for_server: "{{ groups_for_server | default([]) + [item | combine({'servers':'all'})] }}"
+  with_items:
+    - "{{ usergroups }}"
+  when: item.servers is undefined
+
+- name: Adding groups
+  group:
+    name: "{{ item.groupname }}"
+    gid: "{{ item.gid | default(omit) }}"
+    system: "{{ item.system | default(omit) }}"
+  with_items: "{{ groups_for_server | default([]) }}"
+
 - name: Select users for the current server
   set_fact:
     users_for_server: "{{ users_for_server | default([]) + [item.0 | combine({'servers':item.1})] }}"
@@ -34,33 +58,6 @@
   with_items: "{{ users_for_server }}"
   loop_control:
     loop_var: user
-
-
-- name: Select groups for the current server
-  set_fact:
-    groups_for_server: "{{ groups_for_server | default([]) + [item.0 | combine({'servers':item.1})] }}"
-  with_subelements:
-    - "{{ usergroups }}"
-    - servers
-    - flags:
-      skip_missing: true
-  when: item.1 == inventory_hostname
-
-- name: Select groups for all servers
-  set_fact:
-    groups_for_server: "{{ groups_for_server | default([]) + [item | combine({'servers':'all'})] }}"
-  with_items:
-    - "{{ usergroups }}"
-  when: item.servers is undefined
-
-
-- name: Adding groups
-  group:
-    name: "{{ item.groupname }}"
-    gid: "{{ item.gid | default(omit) }}"
-    system: "{{ item.system | default(omit) }}"
-  with_items: "{{ groups_for_server | default([]) }}"
-
 
 - name: Removing users
   ansible.builtin.user:
