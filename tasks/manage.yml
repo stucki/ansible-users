@@ -5,12 +5,18 @@
     name: "{{ users_group }}"
     state: present
   when: users_group is defined and users_group
+  tags:
+    - users
+    - groups
 
 - name: Adding secondary groups
   group:
     name: "{{ item }}"
     state: present
   with_items: "{{ users_groups | default([]) }}"
+  tags:
+    - users
+    - groups
 
 - name: Select groups for the current server
   set_fact:
@@ -23,6 +29,9 @@
   when: item.1 == inventory_hostname
   loop_control:
     label: "Select group for the current server {{ item.0.groupname }}"
+  tags:
+    - users
+    - groups
 
 - name: Select groups for all servers
   set_fact:
@@ -30,6 +39,9 @@
   with_items:
     - "{{ usergroups }}"
   when: item.servers is undefined
+  tags:
+    - users
+    - groups
 
 - name: Adding groups
   group:
@@ -39,6 +51,9 @@
   with_items: "{{ groups_for_server | default([]) }}"
   loop_control:
     label: "Adding group {{ item.groupname }}"
+  tags:
+    - users
+    - groups
 
 - name: Select users for the current server
   set_fact:
@@ -51,6 +66,8 @@
   when: item.1 == inventory_hostname
   loop_control:
     label: "Select user for the current server {{ item.0.username }}"
+  tags:
+    - users
 
 - name: Select users for all servers
   set_fact:
@@ -60,6 +77,8 @@
   when: item.servers is undefined
   loop_control:
     label: "Select user for all servers {{ item.username }}"
+  tags:
+    - users
 
 - name: Adding user-specific primary group
   group:
@@ -69,6 +88,9 @@
   when: item.group is defined and item.group
   loop_control:
     label: "Adding user-specific primary group {{ item.username }}: {{ item.group if item.group is defined else item.username }}"
+  tags:
+    - users
+    - groups
 
 - name: Adding users
   user:
@@ -91,6 +113,8 @@
   with_items: "{{ users_for_server | default([]) }}"
   loop_control:
     label: "Add {{ item.username }}"
+  tags:
+    - users
 
 - name: Setting user's home permission
   file:
@@ -102,6 +126,8 @@
   with_items: "{{ users_for_server | default([]) }}"
   loop_control:
     label: "Setting home permission {{ item.username }}"
+  tags:
+    - users
 
 - name: Adding user's .ssh directory
   file:
@@ -114,6 +140,8 @@
   with_items: "{{ users_for_server | default([]) }}"
   loop_control:
     label: "Adding .ssh directory {{ item.username }}"
+  tags:
+    - users
 
 - name: Adding user's private key
   template:
@@ -124,6 +152,8 @@
     mode: '0600'
   when: (item.home_create is not defined or item.home_create) and item.ssh_key is defined
   with_items: "{{ users_for_server | default([]) }}"
+  tags:
+    - users
 
 - name: Adding user's authorized keys
   authorized_key:
@@ -136,6 +166,8 @@
   with_items: "{{ users_for_server | default([]) }}"
   loop_control:
     label: "Adding authorized keys {{ item.username }}"
+  tags:
+    - users
 
 - name: Removing users
   user:
@@ -143,15 +175,21 @@
     state: absent
     remove: yes
   with_items: "{{ users_remove }}"
+  tags:
+    - users
 
 - name: Remove user's authorized keys
   file:
     path: "{{ users_authorized_keys_path | regex_replace('###USERNAME###', item) }}"
     state: absent
   with_items: "{{ users_remove }}"
+  tags:
+    - users
 
 - name: Removing groups
   group:
     name: "{{ item }}"
     state: absent
   with_items: "{{ usergroups_remove }}"
+  tags:
+    - groups
