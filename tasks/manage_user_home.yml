@@ -36,13 +36,6 @@
   when: user.ssh_key is not defined and user.ssh_keys is defined
   with_dict: "{{ user.ssh_keys }}"
 
-- name: Adding user's authorized SSH keys
-  authorized_key:
-    key: "{{ user.authorized_keys | default([]) | join('\n') }}"
-    user: "{{ user.username }}"
-    exclusive: "{{ user.authorized_keys_exclusive | default(users_authorized_keys_exclusive) }}"
-  ignore_errors: "{{ ansible_check_mode }}"
-
 - name: Adding user's home files
   copy:
     src: "{{ home_file }}"

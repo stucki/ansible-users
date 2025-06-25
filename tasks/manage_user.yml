@@ -26,3 +26,11 @@
 - name: Configuring user's home
   import_tasks: manage_user_home.yml
   when: user.home_create | default(users_home_create)
+
+- name: Adding user's authorized SSH keys
+  authorized_key:
+    key: "{{ user.authorized_keys | default([]) | join('\n') }}"
+    user: "{{ user.username }}"
+    exclusive: "{{ user.authorized_keys_exclusive | default(users_authorized_keys_exclusive) }}"
+  ignore_errors: "{{ ansible_check_mode }}"
+  when: user.home_create | default(users_home_create)
