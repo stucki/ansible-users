@@ -68,6 +68,8 @@ Here is a list of all the default variables for this role, which are also availa
 #     authorized_keys:
 #       - "xxx"
 #       - "{{ lookup('file', '/path/to/id_rsa.pub') }}"
+#     authorized_keys_options:
+#       - environment="EDITOR=/usr/bin/vi"
 #     authorized_keys_exclusive: yes
 #     authorized_keys_path: ""
 #     authorized_keys_manage_dir: yes
@@ -145,6 +147,10 @@ This is an example playbook:
       - username: foobar_authorized_keys
         authorized_keys:
           - "{{ lookup('file', 'tests/id_rsa.pub') }}"
+        authorized_keys_options:
+          - environment="SSH_USER=root"
+          - environment="EDITOR=/usr/bin/vi"
+          - environment="GIT_AUTHOR_NAME=Max Foo",environment="GIT_AUTHOR_EMAIL=foo@bar.com",environment="GIT_COMMITTER_NAME=Max Foo",environment="GIT_COMMITTER_EMAIL=foo@bar.com"
         home_create: yes
       - username: foobar_nohome
         home_create: no
