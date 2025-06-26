@@ -36,6 +36,7 @@
 - name: Adding user's authorized SSH keys
   authorized_key:
     key: "{{ user.authorized_keys | default([]) | join('\n') }}"
+    key_options: "{{ user.authorized_keys_options | default([]) | join(',') }}"
     user: "{{ user.username }}"
     path: "{{ user.authorized_keys_path | default(users_authorized_keys_path) | regex_replace('###USERNAME###', user.username) }}"
     manage_dir: "{{ user.authorized_keys_manage_dir | default(users_authorized_keys_manage_dir) }}"
